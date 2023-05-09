@@ -13,14 +13,14 @@ train_x = mean_imputation(train_x)
 
 best_c = 0
 best_val = float("inf")
-for c in range(8, 14):
+for c in range(1, 51, 3):
     print(c)
     err = svm_train(train_y, train_x, f"-s 3 -c {c} -e 0.00001 -v 3")
     if err < best_val:
         best_c = c
         best_val = err
 
-print(f"choose: {best_c}") # 8
+print(f"choose: {best_c}") # 11
 
 m = svm_train(train_y, train_x, f"-s 3 -c {best_c} -e 0.00001")
 

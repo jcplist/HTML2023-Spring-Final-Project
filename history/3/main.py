@@ -11,18 +11,7 @@ train_y, train_x = get_train(used_entry)
 
 train_x = mean_imputation(train_x)
 
-best_c = 0
-best_val = float("inf")
-for c in range(8, 14):
-    print(c)
-    err = svm_train(train_y, train_x, f"-s 3 -c {c} -e 0.00001 -v 3")
-    if err < best_val:
-        best_c = c
-        best_val = err
-
-print(f"choose: {best_c}") # 8
-
-m = svm_train(train_y, train_x, f"-s 3 -c {best_c} -e 0.00001")
+m = svm_train(train_y, train_x, "-s 3 -c 10 -e 0.00001")
 
 p_labels, p_acc, p_vals = svm_predict(train_y, train_x, m)
 
