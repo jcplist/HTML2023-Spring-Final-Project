@@ -2,14 +2,10 @@ import pandas as pd
 import numpy as np
 from io import StringIO
 
-def get_train ():
+def get_train (used_entry):
     with open("train.csv", "r") as f:
         train_data = f.read()
     train_data = pd.read_csv(StringIO(train_data))
-
-    #used_entry = ["Energy", "Key", "Loudness", "Speechiness", "Acousticness", "Instrumentalness", "Liveness", "Valence", "Tempo", "Duration_ms", "Views", "Likes", "Stream", "Comments"]
-
-    used_entry = ["Key", "Loudness", "Tempo", "Instrumentalness"]
 
     train_x = [[] for _ in range(len(train_data))]
     for entry in used_entry:
@@ -19,14 +15,10 @@ def get_train ():
 
     return (train_y, train_x)
 
-def get_test ():
+def get_test (used_entry):
     with open("test.csv", "r") as f:
         test_data = f.read()
     test_data = pd.read_csv(StringIO(test_data))
-
-    #used_entry = ["Energy", "Key", "Loudness", "Speechiness", "Acousticness", "Instrumentalness", "Liveness", "Valence", "Tempo", "Duration_ms", "Views", "Likes", "Stream", "Comments"]
-
-    used_entry = ["Key", "Loudness", "Tempo", "Instrumentalness"]
 
     test_x = [[] for _ in range(len(test_data))]
     for entry in used_entry:
