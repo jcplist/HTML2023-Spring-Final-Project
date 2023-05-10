@@ -23,11 +23,11 @@ train_y, train_x = get_train(used_entry)
 train_x = mean_imputation(train_x)
 train_x = scaling(train_x)
 
-regr = BaggingRegressor(estimator=SVR(cache_size=4096), n_estimators=100, random_state=0).fit(train_x, train_y)
+regr = BaggingRegressor(estimator=SVR(), n_estimators=10, random_state=0).fit(train_x, train_y)
 
 vy = regr.predict(train_x)
 
-print("Ein:", sum([abs(train_y[i] - vy[i]) for i in range(len(vy))]) / len(vy))
+print("Ein:", sum([abs(train_y[i] - vy[i]) for i in range(len(vy))]) / len(vy)) # 1.8336040467853165
 
 def Eval (i):
     n = len(train_y)
@@ -36,14 +36,13 @@ def Eval (i):
     vxt = train_x[(n // 5 * i):(n // 5 * (i + 1))]
     vyt = train_y[(n // 5 * i):(n // 5 * (i + 1))]
 
-    vregr = BaggingRegressor(estimator=SVR(cache_size=1024), n_estimators=100, random_state=0).fit(vxtr, vytr)
+    vregr = BaggingRegressor(estimator=SVR(), n_estimators=10, random_state=0).fit(vxtr, vytr)
     vyp = vregr.predict(vxt)
     return sum([abs(vyt[i] - vyp[i]) for i in range(len(vyp))]) / len(vyp)
 
 with Pool(5) as p:
     print(p.map(Eval, [0, 1, 2, 3, 4]))
-
-# all errors printed is a little larger than history 8
+# [1.813555537864913, 1.9089586835389227, 1.8296424238272426, 1.9049570048203954, 1.9615214021146883]
 
 test_x = get_test(used_entry)
 test_x = mean_imputation(test_x)
