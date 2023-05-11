@@ -21,9 +21,6 @@ used_entry = ["Instrumentalness", "Speechiness", "Energy", "Valence", "Acousticn
 
 # Key: [0, 10]  Energy: [0, 1]  Tempo: [0, 243]  Valence: [0, 1]  Speechiness: [0, 0.96]
 
-aa = set()
-bb = set()
-
 def scaling (x):
 
     for i in range(len(x)):
@@ -34,30 +31,27 @@ def scaling (x):
         x[i][5] = sqrt(sqrt(sqrt(sqrt(x[i][5]))))
         x[i][6] /= 243
         x[i][7] /= 10
-    
+    bb = set()
     for i in range(len(x)):
-        x[i][8] = aa.index(x[i][8])
-
+        bb.add(x[i][8])
+    bb = list(bb)
+    bb.pop(bb.index(np.nan))
+    bb.sort()
+    bb.append(np.nan)
+    for i in range(len(x)):
+        x[i][8] = bb.index(x[i][8])
+    bb = set()
+    for i in range(len(x)):
+        bb.add(x[i][9])
+    bb = list(bb)
+    bb.pop(bb.index(np.nan))
+    bb.sort()
+    bb.append(np.nan)
     for i in range(len(x)):
         x[i][9] = bb.index(x[i][9])
     return np.array(x)
 
 train_y, train_x = get_train(used_entry)
-
-for i in range(len(train_x)):
-    aa.add(train_x[i][8])
-aa = list(aa)
-aa.pop(aa.index(np.nan))
-aa.sort()
-aa.append(np.nan)
-
-for i in range(len(train_x)):
-    bb.add(train_x[i][9])
-bb = list(bb)
-bb.pop(bb.index(np.nan))
-bb.sort()
-bb.append(np.nan)
-
 #train_x = mean_imputation(train_x)
 train_x = scaling(train_x)
 
