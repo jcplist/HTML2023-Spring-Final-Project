@@ -1,8 +1,7 @@
 from parse_data import get_train, get_test
 from imputation import mean_imputation
 from submit import submit
-from sklearn.svm import SVR
-from sklearn.ensemble import HistGradientBoostingRegressor
+from libsvm.svmutil import *
 from multiprocessing import Pool
 import numpy as np
 from math import sqrt
@@ -19,7 +18,6 @@ from math import sqrt
 #1, instrumentalness^{1/16}, Speechiness^{1/4}, Energy^{1/2}, Valence, Acousticness^{1/16}, Liveness^{1/16}, Tempo/243 1.774 & <= 1.88
 #used_entry = ["Instrumentalness", "Speechiness", "Energy", "Valence", "Acousticness", "Liveness", "Tempo", "Key", "Composer", "Artist"]
 used_entry = ["Instrumentalness", "Speechiness", "Energy", "Valence", "Acousticness", "Liveness", "Tempo", "Key", "Composer"]
-used_entry2 = ["Instrumentalness", "Speechiness", "Energy", "Valence", "Acousticness", "Liveness", "Tempo", "Key", "Composer", "Loudness", "Duration_ms"]
 # Key: [0, 10]  Energy: [0, 1]  Tempo: [0, 243]  Valence: [0, 1]  Speechiness: [0, 0.96]
 
 #experiment on l2_regularization = 1000
@@ -34,13 +32,9 @@ used_entry2 = ["Instrumentalness", "Speechiness", "Energy", "Valence", "Acoustic
 #importance Composer 0.06
 #importance Artist 0.01 (Notice that Eval is smaller if we do not use Artist)
 
-
-Composer_index = 8
-
 aa = set()
 
 def scaling (x):
-
     for i in range(len(x)):
         x[i][0] = sqrt(sqrt(sqrt(sqrt(x[i][0]))))
         x[i][1] = sqrt(sqrt(x[i][1]))
@@ -49,31 +43,33 @@ def scaling (x):
         x[i][5] = sqrt(sqrt(sqrt(sqrt(x[i][5]))))
         x[i][6] /= 243
         x[i][7] /= 10
-    
-    for i in range(len(x)):
-        x[i][Composer_index] = aa.index(x[i][Composer_index])
-
+        composer_t = aa.index(x[i][8])
+        x[i].pop()
+        for _ in range(len(aa)):
+            x[i].append(0)
+        x[i][composer_t + 8] = 1
     return np.array(x)
 
 train_y, train_x = get_train(used_entry)
 
 for i in range(len(train_x)):
-    aa.add(train_x[i][Composer_index])
+    aa.add(train_x[i][8])
 aa = list(aa)
 aa.pop(aa.index(np.nan))
 aa.sort()
 aa.append(np.nan)
 
 train_x = scaling(train_x)
+train_x = mean_imputation(train_x)
 
 rng = np.random.default_rng(seed=1987)
 rng.shuffle(train_x)
 rng = np.random.default_rng(seed=1987)
 rng.shuffle(train_y)
 
-regr = HistGradientBoostingRegressor(random_state=0, loss='absolute_error', categorical_features=[8], l2_regularization=1000).fit(train_x, train_y)
+regr = svm_train(train_y, train_x, "-s 3 -t 0 -c 10 -e 0.00001 -h 0 -m 8192")
 
-vy = regr.predict(train_x)
+vy, q, qq = svm_predict(train_y, train_x, regr)
 
 print("Ein:", sum([abs(train_y[i] - vy[i]) for i in range(len(vy))]) / len(vy))
 
@@ -84,43 +80,21 @@ def Eval (i):
     vxt = train_x[(n // 5 * i):(n // 5 * (i + 1))]
     vyt = train_y[(n // 5 * i):(n // 5 * (i + 1))]
 
-    vregr = HistGradientBoostingRegressor(random_state=0, loss='absolute_error', categorical_features=[8], l2_regularization=1000).fit(vxtr, vytr)
-    vyp = vregr.predict(vxt)
+    vregr = svm_train(vytr, vxtr, "-s 3 -t 0 -c 10 -e 0.00001 -h 0 -m 8192")
+    vyp, q, qq = svm_predict(vyt, vxt, vregr)
     return sum([abs(vyt[i] - vyp[i]) for i in range(len(vyp))]) / len(vyp)
 
 for i in range(5):
     print("Eval:", Eval(i), f"({i})")
 
+'''
+Ein, Eval about 1.89, may need to use larger kernel
+'''
+
 test_x = get_test(used_entry)
 test_x = scaling(test_x)
+test_x = mean_imputation(test_x)
 
-test_x = test_x[2000:]
+p_labels, q, qq = svm_predict([], test_x, regr)
 
-p_labels1 = regr.predict(test_x)
-
-train_y, train_x = get_train(used_entry2)
-
-train_x = scaling(train_x)
-
-rng = np.random.default_rng(seed=1987)
-rng.shuffle(train_x)
-rng = np.random.default_rng(seed=1987)
-rng.shuffle(train_y)
-
-regr = HistGradientBoostingRegressor(random_state=0, loss='absolute_error', categorical_features=[8], l2_regularization=1000).fit(train_x, train_y)
-
-vy = regr.predict(train_x)
-
-print("Ein:", sum([abs(train_y[i] - vy[i]) for i in range(len(vy))]) / len(vy))
-
-for i in range(5):
-    print("Eval:", Eval(i), f"({i})")
-
-test_x = get_test(used_entry2)
-test_x = scaling(test_x)
-
-test_x = test_x[:2000]
-
-p_labels2 = regr.predict(test_x)
-
-submit(np.concatenate((p_labels2, p_labels1)))
+submit(p_labels)
