@@ -18,7 +18,7 @@ from math import sqrt
 #1, instrumentalness^{1/16}, Speechiness^{1/4}, Energy^{1/2}, Valence, Acousticness^{1/16}, Liveness^{1/16}, Key/10 1.906 & <= 2.01
 #1, instrumentalness^{1/16}, Speechiness^{1/4}, Energy^{1/2}, Valence, Acousticness^{1/16}, Liveness^{1/16}, Tempo/243 1.774 & <= 1.88
 #used_entry = ["Instrumentalness", "Speechiness", "Energy", "Valence", "Acousticness", "Liveness", "Tempo", "Key", "Composer", "Artist"]
-used_entry = ["Instrumentalness", "Speechiness", "Energy", "Valence", "Acousticness", "Liveness", "Tempo", "Composer"]
+used_entry = ["Instrumentalness", "Speechiness", "Energy", "Valence", "Acousticness", "Liveness", "Tempo", "Key", "Composer"]
 # Key: [0, 10]  Energy: [0, 1]  Tempo: [0, 243]  Valence: [0, 1]  Speechiness: [0, 0.96]
 
 #experiment on l2_regularization = 1000
@@ -34,7 +34,7 @@ used_entry = ["Instrumentalness", "Speechiness", "Energy", "Valence", "Acousticn
 #importance Artist 0.01 (Notice that Eval is smaller if we do not use Artist)
 
 
-Composer_index = 7
+Composer_index = 8
 Artist_index = 9
 
 aa = set()
@@ -49,6 +49,7 @@ def scaling (x):
         x[i][4] = sqrt(sqrt(sqrt(sqrt(x[i][4]))))
         x[i][5] = sqrt(sqrt(sqrt(sqrt(x[i][5]))))
         x[i][6] /= 243
+        x[i][7] /= 10
     
     for i in range(len(x)):
         x[i][Composer_index] = aa.index(x[i][Composer_index])
@@ -82,7 +83,7 @@ rng.shuffle(train_x)
 rng = np.random.default_rng(seed=1987)
 rng.shuffle(train_y)
 
-regr = HistGradientBoostingRegressor(random_state=0, loss='absolute_error', categorical_features=[Composer_index], l2_regularization=1).fit(train_x, train_y)
+regr = HistGradientBoostingRegressor(random_state=0, loss='absolute_error', categorical_features=[8], l2_regularization=100000).fit(train_x, train_y)
 
 vy = regr.predict(train_x)
 
@@ -95,7 +96,7 @@ def Eval (i):
     vxt = train_x[(n // 5 * i):(n // 5 * (i + 1))]
     vyt = train_y[(n // 5 * i):(n // 5 * (i + 1))]
 
-    vregr = HistGradientBoostingRegressor(random_state=0, loss='absolute_error', categorical_features=[Composer_index], l2_regularization=1).fit(vxtr, vytr)
+    vregr = HistGradientBoostingRegressor(random_state=0, loss='absolute_error', categorical_features=[8], l2_regularization=100000).fit(vxtr, vytr)
     vyp = vregr.predict(vxt)
     return sum([abs(vyt[i] - vyp[i]) for i in range(len(vyp))]) / len(vyp)
 
@@ -106,12 +107,12 @@ for i in range(5):
     print("Eval:", Eval(i), f"({i})")
 
 '''
-Ein: 1.4239465128073456
-Eval: 1.6094837249958627 (0)
-Eval: 1.6139576909015316 (1)
-Eval: 1.6126170945014353 (2)
-Eval: 1.5900850296651603 (3)
-Eval: 1.646235262153525 (4)
+Ein: 1.4593108383575293
+Eval: 1.6093437416563188 (0)
+Eval: 1.636695222249686 (1)
+Eval: 1.5953823746048224 (2)
+Eval: 1.6281631345614727 (3)
+Eval: 1.6573395133124968 (4)
 '''
 
 test_x = get_test(used_entry)
