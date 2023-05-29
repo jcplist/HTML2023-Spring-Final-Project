@@ -26,3 +26,13 @@ def get_test (used_entry):
             test_x[i].append(test_data[entry][i])
 
     return test_x
+
+def csv_to_dict(filename):
+    result_dict = {}
+    df = pd.read_csv(filename)
+    for column in df.columns:
+        try:
+            result_dict[column] = df[column].to_numpy(np.float64)
+        except:
+            result_dict[column] = df[column].to_numpy()
+    return result_dict       
