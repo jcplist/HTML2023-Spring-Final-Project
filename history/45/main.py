@@ -1,20 +1,180 @@
+import pandas as pd 
+import numpy as np 
+import matplotlib.pyplot as plt
+
+from sklearn.pipeline import Pipeline
+from sklearn.preprocessing import PolynomialFeatures
+from sklearn.preprocessing import RobustScaler
+from sklearn.preprocessing import MinMaxScaler
+from sklearn.preprocessing import StandardScaler
+from sklearn.preprocessing import OneHotEncoder
+from sklearn.preprocessing import OrdinalEncoder
+from sklearn.compose import ColumnTransformer
+from sklearn.impute import SimpleImputer
+from sklearn.impute import KNNImputer
+from sklearn.linear_model import SGDRegressor
+from sklearn.ensemble import HistGradientBoostingRegressor
+from sklearn.feature_selection import SelectKBest
+from sklearn.model_selection import cross_validate
+
+from submit import submit
+
+X_train = pd.read_csv('train.csv').iloc[:,1:]
+y_train = pd.read_csv('train.csv').iloc[:,0]
+X_test = pd.read_csv('test.csv')
+
+continuous_features = ["Energy","Loudness","Speechiness","Acousticness","Instrumentalness","Liveness","Valence","Tempo"]
+discrete_features = ["Duration_ms", "Views", "Likes", "Stream", "Comments"]
+ordinal_features = continuous_features + discrete_features
+# ordinal_features = ["Instrumentalness", "Speechiness", "Energy", "Valence", "Acousticness", "Liveness", "Tempo", "Key"]
+categorical_features = ["Composer", "Key", "Artist", "Album_type", "Licensed", "official_video"]
+# categorical_features = ["Composer"]
+
+ordinal_transformer = Pipeline(steps=[
+    ('imputer', SimpleImputer(strategy='median')),
+    # ('imputer', KNNImputer(n_neighbors=5)),
+    ('polynomial', PolynomialFeatures(degree=2, include_bias=False)),
+    # ('scaler', RobustScaler(quantile_range = (25.0, 75.0), unit_variance=True))
+    ('scaler', StandardScaler())
+    # ('scaler', MinMaxScaler())
+])
+
+categorical_transformer = Pipeline(steps=[
+    ('encoder', OneHotEncoder(handle_unknown='ignore'))
+])
+
+preprocessor = ColumnTransformer(transformers=[
+    ('ordinal', ordinal_transformer, ordinal_features),
+    ('categorical', categorical_transformer, categorical_features)
+])
+
+# X_tran = preprocessor.fit_transform(X_train)
+# print(preprocessor.get_feature_names_out())
+# print(len(ordinal_features))
+# print(X_tran.shape)
+# print(X_tran)
+# exit(0)
+
+verbose = 0
+# lucky_cucumber = 0x09902017
+lucky_cucumber = 0xCC12
+model = Pipeline(steps=[
+    ('preprocessor', preprocessor),
+    # ('regressor', SGDRegressor(loss='epsilon_insensitive', epsilon=0, penalty='l2', alpha=0.001, max_iter=1000, tol=0.001, shuffle=True, random_state=lucky_cucumber, verbose=verbose))
+    ('regressor', HistGradientBoostingRegressor(loss='absolute_error', l2_regularization=100000, random_state=lucky_cucumber, verbose=verbose))
+])
+
+model.fit(X_train, y_train)
+y_pred = model.predict(X_train)
+
+# for yp, yt in zip(y_pred, y_train):
+#     print(yp, yt)
+
+Ein = sum([abs(yp - yt) for yp, yt in zip(y_pred, y_train)]) / len(y_train)
+print(f'Ein = {Ein}')
+
+folds = 8
+cv = cross_validate(model, X_train, y_train, cv=folds, scoring='neg_mean_absolute_error', n_jobs=-1)
+scores = cv['test_score']
+Eval = -sum(scores) / folds
+
+# print(-scores)
+print(f'Eval = {Eval}')
+
+model.fit(X_train, y_train)
+y_test1 = model.predict(X_test) # 42
+
+import pandas as pd 
+import numpy as np 
+import matplotlib.pyplot as plt
+
+from sklearn.pipeline import Pipeline
+from sklearn.preprocessing import PolynomialFeatures
+from sklearn.preprocessing import RobustScaler
+from sklearn.preprocessing import MinMaxScaler
+from sklearn.preprocessing import StandardScaler
+from sklearn.preprocessing import OneHotEncoder
+from sklearn.preprocessing import OrdinalEncoder
+from sklearn.compose import ColumnTransformer
+from sklearn.impute import SimpleImputer
+from sklearn.linear_model import SGDRegressor
+from sklearn.ensemble import HistGradientBoostingRegressor
+from sklearn.feature_selection import SelectKBest
+from sklearn.model_selection import cross_validate
+
+from submit import submit
+
+X_train = pd.read_csv('train.csv').iloc[:,1:]
+y_train = pd.read_csv('train.csv').iloc[:,0]
+X_test = pd.read_csv('test.csv')
+
+continuous_features = ["Energy","Loudness","Speechiness","Acousticness","Instrumentalness","Liveness","Valence","Tempo"]
+discrete_features = ["Duration_ms", "Views", "Likes", "Stream", "Comments"]
+ordinal_features = continuous_features + discrete_features
+# ordinal_features = ["Instrumentalness", "Speechiness", "Energy", "Valence", "Acousticness", "Liveness", "Tempo", "Key"]
+categorical_features = ["Composer", "Key", "Artist", "Album_type", "Licensed", "official_video"]
+# categorical_features = ["Composer"]
+
+ordinal_transformer = Pipeline(steps=[
+    ('imputer', SimpleImputer(strategy='median')),
+    ('polynomial', PolynomialFeatures(degree=2, include_bias=False)),
+    # ('scaler', RobustScaler(quantile_range = (25.0, 75.0), unit_variance=True))
+    ('scaler', StandardScaler())
+    # ('scaler', MinMaxScaler())
+])
+
+categorical_transformer = Pipeline(steps=[
+    ('encoder', OneHotEncoder(handle_unknown='ignore'))
+])
+
+preprocessor = ColumnTransformer(transformers=[
+    ('ordinal', ordinal_transformer, ordinal_features),
+    ('categorical', categorical_transformer, categorical_features)
+])
+
+# X_tran = preprocessor.fit_transform(X_train)
+# print(preprocessor.get_feature_names_out())
+# print(len(ordinal_features))
+# print(X_tran.shape)
+# print(X_tran)
+# exit(0)
+
+verbose = 0
+lucky_cucumber = 0xCC12
+model = Pipeline(steps=[
+    ('preprocessor', preprocessor),
+    ('regressor', SGDRegressor(loss='epsilon_insensitive', epsilon=0, penalty='l2', alpha=0.001, max_iter=1000, tol=0.001, shuffle=True, random_state=lucky_cucumber, verbose=verbose))
+    # ('regressor', HistGradientBoostingRegressor(loss='absolute_error', l2_regularization=100000, random_state=lucky_cucumber, verbose=verbose))
+])
+
+model.fit(X_train, y_train)
+y_pred = model.predict(X_train)
+
+# for yp, yt in zip(y_pred, y_train):
+#     print(yp, yt)
+
+Ein = sum([abs(yp - yt) for yp, yt in zip(y_pred, y_train)]) / len(y_train)
+print(f'Ein = {Ein}')
+
+folds = 8
+cv = cross_validate(model, X_train, y_train, cv=folds, scoring='neg_mean_absolute_error', n_jobs=-1)
+scores = cv['test_score']
+Eval = -sum(scores) / folds
+
+# print(-scores)
+print(f'Eval = {Eval}')
+
+model.fit(X_train, y_train)
+y_test2 = model.predict(X_test)
+y_test2 = [y-0.5 if y < 4.5 else y+0.5 for y in y_test2]
+
 from parse_data import get_train, get_test
 from imputation import mean_imputation
 from submit import submit
-from sklearn.ensemble import HistGradientBoostingClassifier
+from libsvm.svmutil import *
 from multiprocessing import Pool
 import numpy as np
 from math import sqrt
-from sklearn.model_selection import train_test_split
-from keras.models import Sequential
-from keras.layers import Dense, Dropout, PReLU
-from keras.callbacks import EarlyStopping
-from sklearn.metrics import mean_absolute_error
-import tensorflow as tf
-config = tf.compat.v1.ConfigProto()
-config.gpu_options.allow_growth = True
-sess = tf.compat.v1.Session(config = config)
-
 
 #used_entry = ["Energy", "Key", "Loudness", "Speechiness", "Acousticness", "Instrumentalness", "Liveness", "Valence", "Tempo", "Duration_ms", "Views", "Likes", "Stream", "Comments"]
 
@@ -42,8 +202,10 @@ used_entry = ["Instrumentalness", "Speechiness", "Energy", "Valence", "Acousticn
 #importance Composer 0.06
 #importance Artist 0.01 (Notice that Eval is smaller if we do not use Artist)
 
-
-Composer_index = 8
+def mapping (y):
+    for i in range(len(y)):
+        y[i] = float(min(max((round(y[i])), 0), 9))
+    return y
 
 aa = set()
 
@@ -56,17 +218,17 @@ def scaling (x):
         x[i][5] = sqrt(sqrt(sqrt(sqrt(x[i][5]))))
         x[i][6] /= 243
         x[i][7] /= 10
-
-    for i in range(len(x)):
-        x[i][Composer_index] = aa.index(x[i][Composer_index])
-
+        composer_t = aa.index(x[i][8])
+        x[i].pop()
+        for _ in range(len(aa)):
+            x[i].append(0)
+        x[i][composer_t + 8] = 1
     return np.array(x)
 
 train_y, train_x = get_train(used_entry)
-train_y = np.array(train_y)
 
 for i in range(len(train_x)):
-    aa.add(train_x[i][Composer_index])
+    aa.add(train_x[i][8])
 aa = list(aa)
 aa.pop(aa.index(np.nan))
 aa.sort()
@@ -80,37 +242,42 @@ rng.shuffle(train_x)
 rng = np.random.default_rng(seed=1987)
 rng.shuffle(train_y)
 
-def neural (y, x):
-    X_train, X_test, y_train, y_test = train_test_split(x, y, test_size=0.1, random_state=1987)
-    m = Sequential()
-    m.add(Dense(1000, activation='relu'))
-    m.add(Dense(1))
-    m.compile(optimizer='rmsprop', loss='mae')
-    es = EarlyStopping(monitor='val_loss', mode='min', patience=50, restore_best_weights = True)
-    m.fit(X_train, y_train, validation_data = (X_test, y_test), callbacks=[es], epochs=5000, batch_size=50, verbose=1)
-    return m
+regr = svm_train(train_y, train_x, "-s 3 -t 2 -c 10 -g 0.5 -e 0.00001 -h 0 -m 8192 -q")
 
-regr = neural(train_y, train_x)
-vy = regr.predict(train_x)
-print("Ein:", mean_absolute_error(vy, train_y)) # 1.66
+vy, q, qq = svm_predict(train_y, train_x, regr, "-q")
+vy = mapping(vy)
+print("Ein:", sum([abs(train_y[i] - vy[i]) for i in range(len(vy))]) / len(vy))
 
 def Eval (i):
+    n = len(train_y)
     vxtr = np.concatenate((train_x[:(n // 5 * i)], train_x[(n // 5 * (i + 1)):]))
     vytr = np.concatenate((train_y[:(n // 5 * i)], train_y[(n // 5 * (i + 1)):]))
     vxt = train_x[(n // 5 * i):(n // 5 * (i + 1))]
     vyt = train_y[(n // 5 * i):(n // 5 * (i + 1))]
-    vregr = neural(vytr, vxtr)
-    vyp = vregr.predict(vxt)
-    return mean_absolute_error(vyt, vyp)
+
+    vregr = svm_train(vytr, vxtr, "-s 3 -t 2 -c 10 -g 0.5 -e 0.00001 -h 0 -m 8192 -q")
+    vyp, q, qq = svm_predict(vyt, vxt, vregr, "-q")
+    vyp = mapping(vyp)
+    return sum([abs(vyt[i] - vyp[i]) for i in range(len(vyp))]) / len(vyp)
 
 #for i in range(5):
 #    print("Eval:", Eval(i), f"({i})")
+
+'''
+Ein: 1.605940594059406
+Eval: 1.691322073383809 (0)
+Eval: 1.7082119976703554 (1)
+Eval: 1.7015142690739662 (2)
+Eval: 1.6476412347117064 (3)
+Eval: 1.672976121141526 (4)
+'''
 
 test_x = get_test(used_entry)
 test_x = scaling(test_x)
 test_x = mean_imputation(test_x)
 
-ty = regr.predict(test_x)
-p_labels = [a[0] for a in ty]
+y_test3, q, qq = svm_predict([], test_x, regr, "-q")
+
+p_labels = [(y_test1[i] + y_test2[i] + y_test3[i]) / 3 for i in range(len(y_test1))]
 
 submit(p_labels)
