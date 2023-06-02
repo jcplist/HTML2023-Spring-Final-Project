@@ -15,6 +15,19 @@ def get_train (used_entry):
 
     return (train_y, train_x)
 
+def get_val (used_entry):
+    with open("val.csv", "r") as f:
+        train_data = f.read()
+    train_data = pd.read_csv(StringIO(train_data))
+
+    train_x = [[] for _ in range(len(train_data))]
+    for entry in used_entry:
+        for i in range(len(train_data)):
+            train_x[i].append(train_data[entry][i])
+    train_y = [_ for _ in train_data['Danceability']]
+
+    return (train_y, train_x)
+
 def get_test (used_entry):
     with open("test.csv", "r") as f:
         test_data = f.read()
