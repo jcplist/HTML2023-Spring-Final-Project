@@ -1,0 +1,4 @@
+- log1: large margin parameter selection
+- log2: small margin parameter selection
+- log3: large margin parameter selection with feature selection
+- log3: small margin parameter selection with feature selection

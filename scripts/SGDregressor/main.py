@@ -12,6 +12,7 @@ from sklearn.preprocessing import OneHotEncoder
 from sklearn.preprocessing import OrdinalEncoder
 from sklearn.compose import ColumnTransformer
 from sklearn.impute import SimpleImputer
+from sklearn.feature_selection import RFE
 from sklearn.svm import SVR
 from sklearn.svm import LinearSVR
 from sklearn.linear_model import SGDRegressor
@@ -72,9 +73,12 @@ lucky_cucumber = 0xCC12
 
 
 
-epsilons = [0+i/100 for i in range(0, 21, 1)]
-alphas = [1e-5+i/1e6 for i in range(-10, 10, 1)]
-tols = [0.1+i/100 for i in range(-10, 10, 1)]
+epsilons = [0.1+i/100 for i in range(-5, 6, 1)]
+alphas = [1e-6+i/1e7 for i in range(-5, 6, 1)]
+tols = [0.1+i/100 for i in range(-5, 6, 1)]
+# epsilons = [i/10 for i in range(0, 4, 1)]
+# alphas = [pow(10, -i) for i in range(3, 8, 1)]
+# tols = [pow(10, -i) for i in range(0, 4, 1)]
 combs = itertools.product(epsilons, alphas, tols)
 
 logfile = open('SGDregressor-parameter.log', 'w')
@@ -82,9 +86,11 @@ progress_bar = tqdm(total=len(epsilons)*len(alphas)*len(tols), desc='Progress')
 
 best_Eval = np.inf
 for (epsilon, alpha, tol) in combs:
+    regr = SGDRegressor(loss='epsilon_insensitive', epsilon=epsilon, penalty='l2', alpha=alpha, max_iter=1000, tol=tol, shuffle=True, random_state=lucky_cucumber, verbose=verbose)
     model = Pipeline(steps=[
         ('preprocessor', preprocessor),
-        ('regressor', SGDRegressor(loss='epsilon_insensitive', epsilon=epsilon, penalty='l2', alpha=alpha, max_iter=1000, tol=tol, shuffle=True, random_state=lucky_cucumber, verbose=verbose))
+        ('selector', RFE(regr, n_features_to_select=42, step=1)),
+        ('regressor', regr)
     ])
 
     model.fit(X_train, y_train)

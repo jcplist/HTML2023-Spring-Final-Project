@@ -1,0 +1,133 @@
+rank,feature
+1,ordinal__Valence
+2,ordinal__Loudness
+3,categorical__Composer_Finneas O'Connell
+4,categorical__Composer_Ludwig Göransson
+5,ordinal__Speechiness
+6,ordinal__Acousticness
+7,categorical__Composer_Terrace Martin
+8,categorical__Album_type_single
+9,categorical__Composer_Juicy J
+10,categorical__Artist_Billie Eilish
+11,categorical__official_video_nan
+12,categorical__official_video_True
+13,categorical__official_video_False
+14,ordinal__Instrumentalness
+15,ordinal__Energy
+16,ordinal__Liveness
+17,categorical__Licensed_False
+18,categorical__Licensed_True
+19,categorical__Licensed_nan
+20,categorical__Composer_Noah "40" Shebib
+21,categorical__Composer_Mike Dean
+22,categorical__Artist_Big Thief
+23,ordinal__Stream
+24,categorical__Artist_Sufjan Stevens
+25,categorical__Artist_Fontaines D.C.
+26,ordinal__Tempo
+27,categorical__Album_type_nan
+28,categorical__Composer_Louis Bell
+29,categorical__Artist_Shawn Mendes
+30,ordinal__Key
+31,categorical__Artist_Bon Iver
+32,categorical__Artist_Halsey
+33,categorical__Artist_Phoebe Bridgers
+34,ordinal__Likes
+35,categorical__Artist_Dua Lipa
+36,categorical__Artist_Lizzo
+37,categorical__Composer_Yeti Beats
+38,categorical__Artist_Parquet Courts
+39,categorical__Artist_Julien Baker
+40,ordinal__Views
+41,categorical__Artist_King Gizzard & The Lizard Wizard
+42,categorical__Composer_J. Cole
+43,categorical__Artist_Marshmello
+44,categorical__Artist_Moses Sumney
+45,categorical__Composer_Ricky Reed
+46,categorical__Album_type_album
+47,categorical__Artist_Drake
+48,categorical__Artist_deadmau5
+49,categorical__Artist_Childish Gambino
+50,categorical__Artist_Soccer Mommy
+51,categorical__Artist_Travis Scott
+52,categorical__Album_type_compilation
+53,categorical__Artist_Kamasi Washington
+54,categorical__Artist_Khruangbin
+55,categorical__Artist_The National
+56,categorical__Artist_Post Malone
+57,categorical__Artist_Alicia Keys
+58,categorical__Artist_Robyn
+59,categorical__Artist_Mitski
+60,categorical__Artist_Tame Impala
+61,categorical__Artist_Cardi B
+62,categorical__Artist_Angel Olsen
+63,categorical__Artist_Mac DeMarco
+64,categorical__Composer_nan
+65,categorical__Artist_Alt-J
+66,categorical__Artist_Chance the Rapper
+67,categorical__Artist_The 1975
+68,categorical__Artist_Bruno Mars
+69,categorical__Artist_J. Cole
+70,categorical__Artist_FKA twigs
+71,categorical__Artist_The Chainsmokers
+72,categorical__Artist_Pharrell Williams
+73,categorical__Artist_St. Vincent
+74,categorical__Artist_Grimes
+75,categorical__Artist_Jay-Z
+76,categorical__Artist_Frank Ocean
+77,categorical__Artist_nan
+78,ordinal__Duration_ms
+79,categorical__Artist_James Blake
+80,categorical__Artist_Charli XCX
+81,categorical__Artist_Flume
+82,categorical__Artist_Rihanna
+83,categorical__Artist_Foals
+84,categorical__Artist_Avicii
+85,categorical__Artist_Major Lazer
+86,categorical__Artist_Skrillex
+87,categorical__Artist_Lorde
+88,categorical__Artist_Kanye West
+89,categorical__Artist_BadBadNotGood
+90,categorical__Artist_Anderson .Paak
+91,categorical__Artist_Justin Bieber
+92,categorical__Artist_Tyler, The Creator
+93,categorical__Artist_Taylor Swift
+94,categorical__Artist_Ariana Grande
+95,categorical__Artist_Ed Sheeran
+96,ordinal__Comments
+97,categorical__Artist_Carly Rae Jepsen
+98,categorical__Artist_A$AP Rocky
+99,categorical__Artist_Zedd
+100,categorical__Artist_Kurt Vile
+101,categorical__Artist_Swedish House Mafia
+102,categorical__Artist_Calvin Harris
+103,categorical__Artist_Usher
+104,categorical__Artist_Martin Garrix
+105,categorical__Artist_Megan Thee Stallion
+106,categorical__Artist_Nicki Minaj
+107,categorical__Artist_Lana Del Rey
+108,categorical__Artist_SZA
+109,categorical__Artist_Chris Brown
+110,categorical__Artist_Justice
+111,categorical__Artist_Kendrick Lamar
+112,categorical__Artist_Thundercat
+113,categorical__Artist_David Guetta
+114,categorical__Artist_Arctic Monkeys
+115,categorical__Artist_Car Seat Headrest
+116,categorical__Artist_Vampire Weekend
+117,categorical__Artist_Daft Punk
+118,categorical__Artist_Black Midi
+119,categorical__Artist_Ty Segall
+120,categorical__Artist_Father John Misty
+121,categorical__Artist_Tove Lo
+122,categorical__Artist_Unknown Mortal Orchestra
+123,categorical__Artist_The xx
+124,categorical__Artist_The Weeknd
+125,categorical__Artist_Doja Cat
+126,categorical__Artist_Harry Styles
+127,categorical__Artist_Kaytranada
+128,categorical__Artist_Arcade Fire
+129,categorical__Artist_Disclosure
+130,categorical__Artist_John Legend
+131,categorical__Artist_Radiohead
+132,categorical__Artist_LCD Soundsystem
