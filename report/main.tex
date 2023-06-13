@@ -100,11 +100,16 @@ In the second stage, we are given a small subset of the private dataset. Conside
 
 \section{Individual Models}
 \subsection{SVM}
+\begin{enumerate}
+	\item Package: LIBSVM
+	\item Selected Features: Instrumentalness, Speechiness, Energy, Valence, Acousticness, Liveness, Tempo, Key, Composer
+	\item Parameters: \texttt{-s 3 -t 2 -c 0.01 -g 0.5 -e 0.00001 -h 0}
+\end{enumerate}
 
 In our initial attempts to surpass the baseline, 
 we opted to utilize a model with which we were familiar and had good control over the issue of overfitting. 
 While tuning this model, we observed that the numerical ranges of each feature significantly influenced the model trained using Support Vector Machine (SVM). 
-Therefore, we selected features with similar numerical ranges in both the train and test data sets and normalized their values to fit within the range of [0, 1]. 
+Therefore, we selected features with similar numerical ranges in both the train and test data sets and normalized their values to fit within the range of $[0, 1]$. 
 For data points that exhibited excessive concentration, we applied mathematical functions (such as square root) to disperse their distributions. 
 As for categorical features, we attempted one-hot encoding for the Composer and Artist, 
 which were deemed more likely to be related to Danceability in their physical meaning. 
@@ -112,12 +117,42 @@ However, we found that while the inclusion of Artist reduced Ein (training error
 it marginally increased Ecv (cross-validation error) and the public score. 
 Consequently, we dropped the Artist feature.
 
-Ultimately, this model achieved a score of 2.078 on the released data, 
+Ultimately, this model achieved a score of 2.084 on the released data, 
 representing the best-performing standalone model prior to our submission deadline.
 
 \subsection{SGD Regressor}
 \subsection{Cat Boost}
+\begin{enumerate}
+	\item Package: CatBoost
+	\item Selected Features: Instrumentalness, Speechiness, Energy, Valence, Acousticness, Liveness, Tempo, Key, Composer, Artist
+	\item Parameters: loss function $=$ MAE, uses eval set in feature select, drop 2 features, train final model $=$ True
+\end{enumerate}
+
+CatBoost is an optimized version of Gradient Boosting Trees. 
+It natively supports handling categorical features and allows the inclusion of a validation dataset to retain the best iteration, 
+thereby reducing the need for parameter tuning while mitigating overfitting. 
+We utilized the similar input as SVM and employed two methods to enhance our model. 
+The first involved constraining the tree depth and applying l2 regularization at the leaf nodes, 
+while the second utilized the feature selection tool built into CatBoost. 
+We found that the approach utilizing feature selection exhibited better performance on the released dataset, 
+leading us to adopt the feature selection version as our final choice.
+
+Ultimately, this model achieved a score of $2.111$ on the released data, 
+representing the best-performing tree model prior to our submission deadline.
+
 \subsection{Other Models}
+
+In addition to the aforementioned three models, we also experimented with various models, 
+including neural networks and random forests. 
+However, their performance on the public score and validation dataset fell short of the aforementioned models, 
+leading us to exclude these two models from our final selection.
+
+Furthermore, we discovered that several linear models, 
+such as BayesianRidge, ARDRegression, ElasticNetCV, LassoLarsCV, as well as neural networks utilizing only linear activation, 
+achieved scores around $2.13$ on the released dataset. 
+These models demonstrated favorable performance after fine-tuning, 
+but due to limitations in space, we refrain from elaborating on them further in this paper.
+
 \section{Blending}
 \section{Final Result}
 
