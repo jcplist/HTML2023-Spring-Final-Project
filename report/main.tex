@@ -76,6 +76,18 @@ We also observed that there are some uncanny information in the testing dataset.
 
 In conclusion, we mainly focus on the ordinal features. Inside each model, the feature selection is performed manually by permuation test or automatically by the model (e.g. ShapValues in CatBoost). The details are specified in each model subsection. 
 
+\subsection{Combat Missing Values}
+
+We have observed that 15\% of the data is missing in each feature.
+In order to facilitate the use of commonly employed machine learning models, 
+it is necessary to fill in these missing portions with appropriate data. 
+Firstly, we need to determine whether the missing data is randomly selected. 
+In some features, such as Channel, where it is relatively easier to obtain the original data, 
+we have found that the missing data is likely to be randomly selected. 
+Based on our belief that the missing data is randomly selected, 
+we have chosen to use mean and median imputation to fill in the missing values, 
+without further exploring whether alternative approaches would yield better performance.
+
 \subsection{Validation Set}
 
 In the first stage, we use k-fold cross validation to tune the parameters and evaluate each model. Nonetheless, the public score is quite far away from the validation score. When the public score is around $1.9$, selecting a model with lower validation score does not necessarily give a lower public score. It felt like the public score was randomly hovering between $1.8$ to $2.0$. We believe that this is due to the manual distortion in test data and thus the validation score can only provide a considerably vague approximation on the public / private score.
@@ -88,6 +100,21 @@ In the second stage, we are given a small subset of the private dataset. Conside
 
 \section{Individual Models}
 \subsection{SVM}
+
+In our initial attempts to surpass the baseline, 
+we opted to utilize a model with which we were familiar and had good control over the issue of overfitting. 
+While tuning this model, we observed that the numerical ranges of each feature significantly influenced the model trained using Support Vector Machine (SVM). 
+Therefore, we selected features with similar numerical ranges in both the train and test data sets and normalized their values to fit within the range of [0, 1]. 
+For data points that exhibited excessive concentration, we applied mathematical functions (such as square root) to disperse their distributions. 
+As for categorical features, we attempted one-hot encoding for the Composer and Artist, 
+which were deemed more likely to be related to Danceability in their physical meaning. 
+However, we found that while the inclusion of Artist reduced Ein (training error), 
+it marginally increased Ecv (cross-validation error) and the public score. 
+Consequently, we dropped the Artist feature.
+
+Ultimately, this model achieved a score of 2.078 on the released data, 
+representing the best-performing standalone model prior to our submission deadline.
+
 \subsection{SGD Regressor}
 \subsection{Cat Boost}
 \subsection{Other Models}
