@@ -1,0 +1,14 @@
+Default metric period is 5 because MAE is/are not implemented for GPU
+Step #1 out of 1
+bestTest = 2.162113824
+bestIteration = 430
+Shrink model to first 431 iterations.
+Feature #1 eliminated
+Feature #2 eliminated
+Train final model
+bestTest = 2.110603441
+bestIteration = 490
+Shrink model to first 491 iterations.
+{'selected_features': [0, 3, 4, 5, 6, 7, 8, 9], 'eliminated_features_names': ['', ''], 'loss_graph': {'main_indices': [0, 2], 'removed_features_count': [0, 1, 2], 'loss_values': [2.162112724009294, 2.1195511068301145, 2.1106025676453037]}, 'eliminated_features': [1, 2], 'selected_features_names': ['', '', '', '', '', '', '', '']}
+Ein: 1.858874200236555
+Eval: 2.110603567645325
