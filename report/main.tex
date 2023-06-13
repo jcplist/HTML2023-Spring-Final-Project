@@ -1,0 +1,135 @@
+% \documentclass[10pt,twocolumn,letterpaper]{article}
+\documentclass[10pt,letterpaper]{article}
+%% Welcome to Overleaf!
+%% If this is your first time using LaTeX, it might be worth going through this brief presentation:
+%% https://www.overleaf.com/latex/learn/free-online-introduction-to-latex-part-1
+
+%% Researchers have been using LaTeX for decades to typeset their papers, producing beautiful, crisp documents in the process. By learning LaTeX, you are effectively following in their footsteps, and learning a highly valuable skill!
+
+%% The \usepackage commands below can be thought of as analogous to importing libraries into Python, for instance. We've pre-formatted this for you, so you can skip right ahead to the title below.
+
+%% Language and font encodings
+\usepackage[spanish,english]{babel}
+\usepackage[utf8x]{inputenc}
+\usepackage[T1]{fontenc}
+
+%% Sets page size and margins
+\usepackage[a4paper,top=1.5cm,bottom=1.5cm,left=1.5cm,right=1.5cm,marginparwidth=1.75cm]{geometry}
+
+%% Useful packages
+\usepackage{amsmath}
+\usepackage{graphicx}
+\usepackage[colorinlistoftodos]{todonotes}
+\usepackage[colorlinks=true, allcolors=blue]{hyperref}
+
+%% Title
+\title{
+		%\vspace{-1in} 	
+		\usefont{OT1}{bch}{b}{n}
+		% \normalfont \normalsize \textsc{STEM Fellowship Journal Template} \\ [14pt]
+		\huge HTML2023 Spring Final Project \\
+}
+
+\usepackage{authblk}
+
+\author{b10902003, b10902067}
+% \author[1]{Third Author}
+% \author[1,3]{Fourth Author}
+
+	% \affil[1]{\small{CSIE, National Taiwan University}}
+% \affil[2]{Department, Institution/School}
+% \affil[3]{Department, Institution/School} 
+
+
+\begin{document}
+\maketitle
+
+\selectlanguage{english}
+% \begin{abstract}
+% The abstract is in a sense the most important part of your paper, since many readers will scan an abstract first before deciding to invest effort in reading the paper.
+
+% An abstract should be about 300 words long at most, and should act as a clear summary of the paper. It should state the aim and scope of the research, methods, results and conclusions, and the implications of the paper’s finding. The abstract should be broadly accessible (i.e. able to be understood by as many people as possible - even those outside the field) and communicate the importance of the work being done. 
+
+% Structure the abstract as follows: background and aims, methods, results and conclusion. Please note that review articles will not contain methods or results. 
+
+% Examples of ideal abstracts can be found \href{http://journal.stemfellowship.org/userimages/ContentEditor/1451371646443/AbstractExamples.pdf}{here}, with the main ideas highlighted.
+% \end{abstract} 
+
+% \section*{Keywords}
+% Select keywords with care, because they will help users discover your paper. To determine appropriate keywords, put yourself in the position of someone who is trying to search for a paper like yours. What search terms would you use? From those terms, select a list of at least three and no more than five words. Include these words in the text of the abstract and if at all possible, in the title of the paper.
+
+\section{Initial Settings}
+\subsection{Data Inspection}
+
+The features in the dataset can be classified into three types:
+\begin{itemize}
+  \item Ordinal: Energy, Key, Loudness, Speechiness, Acousticness, Instrumentalness, Liveness, Valence, Tempo, Duration\_ms, Views, Likes, Comments
+  \item Categorical: Album\_type, Licensed, official\_video, Album, Channel, Composer, Artist
+  \item Text: Track, Uri, Uri\_spotify, Url\_youtube, Description, Title
+\end{itemize}
+
+Notice that we drop ID since it is a manually added feature in the dataset, it should provide no insight about the danceability of each track. We also drop text data, due to the fact that it is provided by the uploader and has no standardized format. We believe that in such cases, it contains more noise than the insight about danceability. 
+
+Diving into the dataset, we found out that there are only 11 composers and 97 artists. It seemed unnatural to us that there are such less unique composers and artists given that we have more than 17,000 tracks. We dug into several tracks and realized that both features are totally incorrect, and provide us nothing but misleading information. As a result, we also dropped those two features.
+
+We also observed that there are some uncanny information in the testing dataset. For example, negative values in \verb|Duration_ms| and decimals in \verb|Views|! Those information appear after \verb|id=19170|, which is the 2001-th test data. Moreover, aside from unreasonable values, some features (e.g. Loudness, Speechiness, etc.) have over 10 decimal places after the 2001-th test data and only 3 decimal places before. In light of those weirdness, we made a assumption that \textbf{Nijika} had fiddled those test data. To counter such mischief, we had different approaches toward the two sections of data. For the first 2000 test data, we believe they are more related to the training data and thus apply models with stronger power and less regulizations; as for the remaining data, we believe there are huge amounts of noise and thus apply stronger regulization on the models. 
+
+In conclusion, we mainly focus on the ordinal features. Inside each model, the feature selection is performed manually by permuation test or automatically by the model (e.g. ShapValues in CatBoost). The details are specified in each model subsection. 
+
+\subsection{Validation Set}
+
+In the first stage, we use k-fold cross validation to tune the parameters and evaluate each model. Nonetheless, the public score is quite far away from the validation score. When the public score is around $1.9$, selecting a model with lower validation score does not necessarily give a lower public score. It felt like the public score was randomly hovering between $1.8$ to $2.0$. We believe that this is due to the manual distortion in test data and thus the validation score can only provide a considerably vague approximation on the public / private score.
+
+Blindly follow the validation score seemed to lead to an overfitting on the training dataset, and did not help us much on selecting the best model. Therefore, we utilized the 5 submissions per day to try out every possible model we had, and managed to reach a relatively lower public score by the end of the first competition. However, on the award ceremony, professor Lin revealed that there is a distribution shift between public and private dataset. Thus what we had done was overfitting on the public dataset, resulting in an appalling private score. 
+
+In the second stage, we are given a small subset of the private dataset. Considering the problematic validation score above, we decided to apply it on validating and give up on cross validation. We believed that we had had enough training data but lack in validating, thus apply it on validation may make the greatest use on it. 
+
+% During the first stage award ceremony, our team had won the third prize in private score and were blessed with a glance in the private score of a specific submission. 
+
+\section{Individual Models}
+\subsection{SVM}
+\subsection{SGD Regressor}
+\subsection{Cat Boost}
+\subsection{Other Models}
+\section{Blending}
+\section{Final Result}
+
+\newpage
+
+\bibliographystyle{vancouver}
+\bibliography{references}
+
+% \begin{thebibliography}{9}
+% All information or data from other sources or authors must be appropriately cited at each point in the text where the source is relevant. All sources should be listed in a bibliographic reference section at the end of the paper with the heading "Reference List". 
+
+% If the paper contains any copyright material, such as tables, figures, images, or other, the authors must obtain written permission from the copyright holder and provide it to the editor. 
+
+% Bibliographic references should conform to the Vancouver style. In this style, bibliographic references are numbered and citations in the text to each reference should be numbers in square brackets; e.g., [1]. 
+
+% If you are using a reference management system (such as Zotero, Mendeley or ReadCube), you may be able to export your bibliography as a Bib\TeX{} file. 
+
+% Please refer to the comments in this template for how to format your references in LaTeX (either with a .bib file, or via manual input of references).
+
+
+%% Please read the following comments for instructions on formatting your references.
+%% The provided style file formats references in the required Vancouver style
+%% This is a useful guide to formatting bibliographies using LaTeX (https://en.wikibooks.org/wiki/LaTeX/Bibliography_Management)
+
+%% References with BibTeX database:
+%%Bib\TeX{} is a bibliographic tool that is used with \LaTeX{} to help organize the user's references and create a bibliography. This short tutorial explains how to use BibTex files [https://www.latex-tutorial.com/tutorials/beginners/latex-bibtex/].
+
+%%For references without a BibTeX database:
+%%Your line of code will start with the \bibitem{cite_key} command. This is a unique identifier for a reference, such as #\bibitem{Lindquist95} or  #\bibitem{Smithetal2002}. Following the #\bibitem{cite_key} command is the actual reference. Here you should include all relevant details for the reference e.g. authors, title, year of publication, etc. The \bibliographystyle{vancouver} will format these references to the correct Vancouver style - as required by the STEM Fellowship Journal.
+
+%% \bibitem must have the following form:
+%%   \bibitem{key}...
+%%
+
+% \bibitem{}
+% Below is an example.
+
+%%\bibitem{Smithetal2002}
+
+% \end{thebibliography}
+
+\end{document}
