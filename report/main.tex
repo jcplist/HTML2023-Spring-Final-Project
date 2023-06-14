@@ -118,7 +118,7 @@ it marginally increased Ecv (cross-validation error) and the public score.
 Consequently, we dropped the Artist feature.
 
 Ultimately, this model achieved a score of $2.084$ on the released data, 
-representing the best-performing standalone model prior to our submission deadline.
+representing the second-best performing standalone model prior to our submission deadline.
 
 \subsection{SGD Regressor}
 \subsection{Cat Boost}
@@ -154,6 +154,22 @@ These models demonstrated favorable performance after fine-tuning,
 but due to limitations in space, we refrain from elaborating on them further in this paper.
 
 \section{Blending}
+
+In the final stage, we merged the aforementioned models that yielded satisfactory results into a single model. 
+As we had exhausted all available datasets during the training of the preceding models, 
+to prevent overfitting, we simply assigned different weights to each model based on our understanding of their performance. 
+SVM and SGDRegressor exhibited the best performance, thus receiving higher weights, 
+while the other models were assigned lower weights. 
+We believe that such an allocation contributes to controlling the upper bound of the private score while providing opportunities for effective error correction. 
+Through simple mathematical reasoning, 
+it can be deduced that the worst-case scenario for the private score is the sum of each model's private score multiplied by their respective weights. 
+Due to the higher weights assigned to SVM and SGDRegressor, the worst-case scenario for Blending does not deviate significantly from the performance of these two models. 
+Simultaneously, when different models make predictions on the same value, 
+if their predictions fall on opposite sides of the correct answer, 
+we can anticipate improved results through the blending of predicted values.
+
+Ultimately, this model achieved a score of $2.039$ on the released data, outperforming all individual models.
+
 \section{Final Result}
 
 \newpage
