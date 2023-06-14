@@ -14,8 +14,8 @@
 \usepackage[T1]{fontenc}
 
 %% Sets page size and margins
-\usepackage[a4paper,top=1.5cm,bottom=1.5cm,left=1.5cm,right=1.5cm,marginparwidth=1.75cm]{geometry}
-\setlength{\parskip}{0.3\baselineskip}
+\usepackage[a4paper,top=1.3cm,bottom=1.5cm,left=1.5cm,right=1.5cm,marginparwidth=1.75cm]{geometry}
+\setlength{\parskip}{0.2\baselineskip}
 % \setlength{\parindent}{0pt}
 
 %% Useful packages
@@ -24,6 +24,7 @@
 \usepackage[colorinlistoftodos]{todonotes}
 \usepackage[colorlinks=true, allcolors=blue]{hyperref}
 \usepackage{enumitem} 
+\usepackage{tabularx}
 
 % \setlist{nosep, itemsep=5pt, parsep=0pt, before={\parskip=0pt}, after=\vspace{-\parskip}}%
 \setlist{nosep, itemsep=3pt, parsep=0pt}%
@@ -51,6 +52,7 @@
 
 \begin{document}
 \maketitle
+\vspace{-0.5cm}
 
 \selectlanguage{english}
 % \begin{abstract}
@@ -69,49 +71,44 @@
 \section{Initial Settings}
 \subsection{Data Inspection}
 
-The features in the dataset can be classified into three types:
-\begin{itemize}
-  \item Ordinal: \texttt{Energy, Key, Loudness, Speechiness, Acousticness, Instrumentalness, Liveness, Valence, Tempo, Duration\_ms, Views, Likes, Comments}
-  \item Categorical: \texttt{Album\_type, Licensed, official\_video, Album, Channel, Composer, Artist}
-  \item Text: \texttt{Track, Uri, Uri\_spotify, Url\_youtube, Description, Title}
-\end{itemize}
+% The features in the dataset can be classified into three types:
+% \begin{itemize}
+%   \item Ordinal: \texttt{Energy, Key, Loudness, Speechiness, Acousticness, Instrumentalness, Liveness, Valence, Tempo, Duration\_ms, Views, Likes, Comments}
+%   \item Categorical: \texttt{Album\_type, Licensed, official\_video, Album, Channel, Composer, Artist}
+%   \item Text: \texttt{Track, Uri, Uri\_spotify, Url\_youtube, Description, Title}
+% \end{itemize}
 
-Notice that we drop ID since it is a manually added feature in the dataset, it should provide no insight about the danceability of each track. We also drop text data, due to the fact that it is provided by the uploader and has no standardized format. We believe that in such cases, it contains more noise than the insight about danceability. 
+The features in the dataset can be classified into three types: ordinal, categorical and text. Separating those features into those $3$ types helped us make different use of it. We dropped \texttt{id} since it is a manually added feature in the dataset, it should provide no insight about the danceability of each track. We also drop text data, due to the fact that it is provided by the uploader and has no standardized format. We believe that in such cases, it contains more noise than the insight about danceability. 
 
-Diving into the dataset, we found out that there are only 11 composers and 97 artists. It seemed unnatural to us that there are such less unique composers and artists given that we have more than 17,000 tracks. We dug into several tracks and realized that both features are totally incorrect, and provide us nothing but misleading information. As a result, we also dropped those two features.
+Diving into the dataset, we found out that there are only 11 composers and 97 artists. It seemed unnatural to us that there are such less unique composers and artists given that we have more than 17,000 tracks. We dug into several tracks and realized that both features are totally incorrect, and should provide us nothing but misleading information. We had though of dropping the two features, but the experiment results told us that including composer may in fact improve performance. We cannot tell a good reason why a false information could provide improvement, the only possibility we could think of is that \textbf{Nijika} is so mischievous that they modified this feature manually in a way that it implied information concerning \texttt{danceability}.
 
-We also observed that there are some uncanny information in the testing dataset. For example, negative values in \verb|Duration_ms| and decimals in \verb|Views|! Those information appear after \verb|id=19170|, which is the 2001-th test data. Moreover, aside from unreasonable values, some features (e.g. Loudness, Speechiness, etc.) have over 10 decimal places after the 2001-th test data and only 3 decimal places before. In light of those weirdness, we made a assumption that \textbf{Nijika} had fiddled those test data. To counter such mischief, we had different approaches toward the two sections of data. For the first 2000 test data, we believe they are more related to the training data and thus apply models with stronger power and less regulizations; as for the remaining data, we believe there are huge amounts of noise and thus apply stronger regulization on the models. 
-
-In conclusion, we mainly focus on the ordinal features. Inside each model, the feature selection is performed manually by permuation test or automatically by the model (e.g. ShapValues in CatBoost). The details are specified in each model subsection. 
+We also observed that there are some uncanny information in the testing dataset. For example, negative values in \verb|Duration_ms| and decimals in \verb|Views|! Those information appear after \verb|id=19170|, which is the 2001-th test data. Moreover, aside from unreasonable values, some features (e.g. Loudness, Speechiness, etc.) have over 10 decimal places after the 2001-th test data and only 3 decimal places before. In light of those weirdness, we made a assumption that \textbf{Nijika} had also fiddled those data. To counter such mischief, we had different approaches toward the two sections. For the first 2000 test data, we consider them as more related to the training data and thus apply models with stronger power and less regularization; as for the remaining data, we believe there are huge amounts of noise and thus apply stronger regularization. 
 
 \subsection{Combat Missing Values}
 
-We have observed that 15\% of the data is missing in each feature.
-In order to facilitate the use of commonly employed machine learning models, 
-it is necessary to fill in these missing portions with appropriate data. 
-Firstly, we need to determine whether the missing data is randomly selected. 
-In some features, such as Channel, where it is relatively easier to obtain the original data, 
-we have found that the missing data is likely to be randomly selected. 
-Based on our belief that the missing data is randomly selected, 
-we have chosen to use mean and median imputation to fill in the missing values, 
-without further exploring whether alternative approaches would yield better performance.
+We have observed that 15\% of the data is missing in each feature. In order to facilitate the use of commonly employed machine learning models, it is necessary to fill in these missing portions with appropriate data. Firstly, we need to determine whether the missing data is randomly selected. 
+In some features, such as Channel, where it is relatively easier to obtain the original data, we have found that the missing data is likely to be randomly selected. Based on our belief that the missing data is randomly selected, we have chosen to use mean and median imputation to fill in the missing values, without further exploring whether alternative approaches would yield better performance.
 
 \subsection{Validation Dataset}
 
-In the first stage, we use k-fold cross validation to tune the parameters and evaluate each model. Nonetheless, the public score is quite far away from the validation score. As we could see in Figure~\ref{fig:EvalEpublicScatter}, the public score is roughly $0.2$ higher than validation score. When the public score is around $1.9$, we can barely tell which model is better according to the validation score. It felt like the public score was randomly hovering around $1.9$. We believe that this is due to the manual distortion in test data and thus the validation score can only provide a considerably vague approximation on the public / private score.
+In the first stage, we use k-fold cross validation to tune the parameters and evaluate each model. Nonetheless, the public score is quite far away from the validation score. As we could see in Figure~\ref{fig:EpublicEcvScatter}, the public score is roughly $0.2$ higher than validation score. When the public score is around $1.9$, we can barely tell which model is better according to the validation score. It felt like the public score was randomly hovering around $1.9$. We believe that this is due to the manual distortion in test data and thus the validation score can only provide a considerably vague approximation on the public / private score.
 
 \begin{figure}[h]
 	\centering
-	\includegraphics[width=0.4\textwidth]{Eval-Epublic-scatter.png}
-	\caption{The scatter plot of Eval and Epublic with linear regression line}
-	\label{fig:EvalEpublicScatter}
+	\includegraphics[width=0.4\textwidth]{Epublic-Ecv-scatter.png}
+	\caption{The scatter plot of Epublic and Ecv with linear regression line}
+	\label{fig:EpublicEcvScatter}
 \end{figure}
 
 Blindly follow the validation score seemed to lead to an overfitting on the training dataset, and did not help us much on selecting the best model. Therefore, we utilized the 5 submissions per day to try out every possible model we had, and managed to reach a relatively lower public score by the end of the first competition. However, on the award ceremony, professor Lin revealed that there is a distribution shift between public and private dataset. Thus what we had done was overfitting on the public dataset, resulting in an appalling private score. 
 
-In the second stage, we are given a small subset of the private dataset. Considering the problematic validation score above, we decided to apply it on validating and give up on cross validation. We believed that we had had enough training data but lack in validating, thus apply it on validation may make the greatest use on it. 
+In the second stage, we are given a small subset of the private dataset. Considering the problematic validation score above, we decided to apply it on validating and give up on cross validation. We believed that we had had enough training data but lack in validating, thus apply it on validation may make the greatest use on it. For the rest of the report, we refer this dataset as the \textbf{validation dataset}.
 
-% During the first stage award ceremony, our team had won the third prize in private score and were blessed with a glance in the private score of a specific submission. 
+\subsection{Rounding Output}
+
+Different from regular regularization problems, the target value $y$ is ensured to be an integer. Thus we should round the predicted value as a postprocessing method. We elaborate the reason in the following part. 
+
+We consider another version where $y \in \{0, 1\}$ for simplification, extending $y$ to larger number makes no difference. Let $p, 1-p$ be the probability of $y = 0$ and $y = 1$ respectively. If our predicted value $v$ is less than $0.5$, we are more confident that $y = 0$ than $y = 1$, indicating that $p > 0.5$. In such cases, the expected error of saying $y = v$ is $pv + (1-p)(1-v)$, while the expected error of saying $y = 0$ is $(1-p)$. By $v < 0.5$ and $p > 0.5$, we have $pv + (1-p)(1-v) > 1-p$, thus we should round the output. 
 
 \section{Individual Models}
 
@@ -126,6 +123,7 @@ Support Vector Regression (SVR) is our first model that passed the baseline. We 
 	\item Package: LIBSVM
 	\item Selected Features: \texttt{Instrumentalness, Speechiness, Energy, Valence, Acousticness, Liveness, Tempo, Key, Composer}
 	\item Parameters: \texttt{-s 3 -t 2 -c 0.01 -g 0.5 -e 0.00001 -h 0}
+	\item Result: $\text{Ein} = 2.01934, \text{Eval} = 2.07765, \text{Epublic} = 2.0643$
 \end{itemize}
 
 \subsubsection{Introduction}
@@ -164,23 +162,21 @@ $$
 $$
 The model reached $\text{Ein} = 1.60594, \text{Ecv} = 1.68433, \text{Epublic} = 1.88533$. 
 
-In the second stage, we tuned the parameters again, but instead refer to the validation dataset (Eval). We selected \texttt{-t 2 -c 0.01 -g 0.5 -e 0.00001} as the best parameters, which represents
-\begin{align*}
-	\underset{\mathbf{w}, b, \mathbf{\xi}, \mathbf{\xi^*}}{\min} \quad & \frac{1}{2}\mathbf{w}^T\mathbf{w} + 0.01\left(\sum_{i=1}^m \xi_i + \sum_{i=1}^m \xi^*_i\right) \\
-	\text{subject to} \quad & (\mathbf{w}^T \mathbf{\Phi(x)} + b) - y_i \le 0.00001 + \xi_i \\
-	& y_i - (\mathbf{w}^T \mathbf{\Phi(x)} + b) \le 0.00001 + \xi^*_i \\
-	& \xi_i, \xi^*_i \ge 0
-\end{align*}
-with kernel function
-$$
-	K(\mathbf{x}, \mathbf{x'}) = \exp(-0.5 \lvert \mathbf{x} - \mathbf{x'}\rvert^2)
-$$
-The model reached $\text{Ein} = 2.01934, \text{Eval} = 2.07765, \text{Epublic} = 2.0643$. 
+In the second stage, we tuned the parameters again, but instead refered to the validation dataset (Eval). We selected \texttt{-t 2 -c 0.01 -g 0.5 -e 0.00001} as the best parameters, which only differs in the regularizing weight ($C = 0.01$) with respect to the first set. This model reached $\text{Ein} = 2.01934, \text{Eval} = 2.07765, \text{Epublic} = 2.0643$. 
 
-The first set of parameters had lower errors, which lured us to select it as the final parameters. However, due to the distribution shift between public and private dataset, the second set seemed to be a more generalized and robust approach. As we can see in the errors, Eval approximated Epublic better, which made us believe that it also approximates Eprivate well. In addition, the only difference between the two sets is the regularizing weight ($C$). The first set emphasized more on the error itself while the second penalized more on model complexity. We believed that given Ein is much lower than Epublic, we had had enough model power but lack in regularization. Therefore, we selected the second set as the final parameters of SVR. 
+% represents
+% \begin{align*}
+% 	\underset{\mathbf{w}, b, \mathbf{\xi}, \mathbf{\xi^*}}{\min} \quad & \frac{1}{2}\mathbf{w}^T\mathbf{w} + 0.01\left(\sum_{i=1}^m \xi_i + \sum_{i=1}^m \xi^*_i\right) \\
+% 	\text{subject to} \quad & (\mathbf{w}^T \mathbf{\Phi(x)} + b) - y_i \le 0.00001 + \xi_i \\
+% 	& y_i - (\mathbf{w}^T \mathbf{\Phi(x)} + b) \le 0.00001 + \xi^*_i \\
+% 	& \xi_i, \xi^*_i \ge 0
+% \end{align*}
+% with kernel function
+% $$
+% 	K(\mathbf{x}, \mathbf{x'}) = \exp(-0.5 \lvert \mathbf{x} - \mathbf{x'}\rvert^2)
+% $$
 
-% \subsubsection{Results}
-% The model is relatively slow with such large dataset. On average, a training and predicting process requires $19.7$ seconds with around $650\%$ CPU usage. 
+The first set of parameters had lower errors, which lured us to select it as the final parameters. However, due to the distribution shift between public and private dataset, the second set seemed to be a more generalized and robust approach. As we can see in the errors, Eval approximated Epublic better, which made us believe that it also approximates Eprivate well. In addition, the difference in the regularizing weight tells that the first set emphasized more on the error itself while the second penalized more on model complexity. We believed that given Ein is much lower than Epublic, we had had enough model power but lack in regularization. Therefore, we selected the second set as the final parameters of SVR. 
 
 \subsection{Stochastic Gradient Descent Regressor}
 
@@ -191,9 +187,10 @@ The second model is stochastic gradient descent regressor (SGD Regressor). This 
 	\item Package: scikit-learn (\verb|sklearn.linear_model.SGDRegressor|)
 	\item Selected Features: ordinal + categorical
 	\item Parameters:\begin{itemize}
-		\item RFE: \verb|n_features_to_select=42, step=1|
-		\item SGDRegressor: \texttt{loss='epsilon\_insensitive', epsilon=0.08, penalty='l2', alpha=1.2e-6, max\_iter=1000, tol=0.06, shuffle=True, random\_state=0xCC12}
+		\item RFE: \verb|RFE(regr, n_features_to_select=42, step=1)|
+		\item SGD Regressor: \texttt{SGDRegressor(loss='epsilon\_insensitive', epsilon=0.08, max\_iter=1000, tol=0.06, alpha=1.2e-6, penalty='l2',  shuffle=True, random\_state=0xCC12)}
 	\end{itemize}
+	\item Result: $\text{Ein} = 1.90174, \text{Eval} = 2.05658, \text{Epublic} = 1.92809$
 \end{itemize}
 
 \subsubsection{Introduction}
@@ -202,7 +199,7 @@ SGD Regressor aims to solve a problem similar to SVR, it minimizes the following
 $$
 	E(\mathbf{w}, \mathbf{b}) = \frac{1}{n}\sum_{i=1}^n L(y_i, f(\mathbf{x_i})) + \alpha R(\mathbf{w})
 $$
-Yet, SGD Regressor and SVR differs in the method of approaching minimum. SGD regressor descents according to a randomly selected subset of data during each iteration, giving it the "stochastic" name. 
+Yet, SGD Regressor and SVR differs in the method of approaching minimum. SGD Regressor descents according to a randomly selected subset of data during each iteration, giving it the "stochastic" name. 
 
 By setting the loss function to epsilon-insensitive, we can match the \textbf{Nijika}'s target error (MAE)
 $$
@@ -212,18 +209,18 @@ $\epsilon$ represents the tolerable error, $\alpha$ represents the importance of
 
 \subsubsection{Preprocessing}
 
+Since SGD Regressor is also sensitive to feature scaling, we had to apply scaling to the ordinal features. In SGD Regressor, we tried several scaler and found out that \texttt{sklearn.preprocessing.MinMaxScaler}, scaling values to unit length, outperformed the rest. We believed that this is because one-hot encoder transforms categorical features to $0$ or $1$, having the other features scaling to $[0, 1]$ will best fit the regularizer. 
+
+We also tried polynomial transformation on the dataset. Though it decreases Ein, the validation score was horrible. Apparently, applying polynomial transformation had given too much power on the model and thus overfitted on the training dataset. 
+
+Aside from those transformations, we also applied feature selection on the transformed features. We utilized \texttt{sklearn.feature\_selection.RFE} to complete the task. It performed a recursive feature elimination, removing the least important feature on each iteration according to its coefficient calculated by the regressor model. We believed that it not only reduced computation time, but also improved generality. As a result, Eval decreased from $2.06367$ to $2.05658$, making a slight improvement. 
+
 \begin{figure}[h]
 	\centering
 	\includegraphics[width=0.6\textwidth]{SGDregressor-diagram.png}
 	\caption{The preprocessing diagram of SGD Regressor}
 	\label{fig:SGDRegressorDiagram}
 \end{figure}
-
-Since SGD Regressor is also sensitive to feature scaling, we had to apply scaling to the ordinal features. In SGD regressor, we tried several scaler and found out that \texttt{sklearn.preprocessing.MinMaxScaler}, scaling values to unit length, outperformed the rest. We believed that this is because one-hot encoder transforms categorical features to $0$ or $1$, having the other features scaling to $[0, 1]$ will best fit the regularizer. 
-
-We also tried polynomial transformation on the dataset. Though it decreases Ein, the validation score was horrible. Apparently, applying polynomial transformation had given too much power on the model and thus overfitted on the training dataset. 
-
-Aside from those transformations, we also applied feature selection on the transformed features. We utilized \texttt{sklearn.feature\_selection.RFE} to complete the task. It performed a recursive feature elimination, removing the least important feature on each iteration according to its coefficient calculated by the regressor model. We believed that it not only reduced computation time, but also improved generality. As a result, Eval decreased from $2.06367$ to $2.05658$, making a slight improvement. 
 
 \subsubsection{Parameters}
 
@@ -247,15 +244,16 @@ Our third model is Cat Boost. It achieved a score of $2.111$ on the validation d
 						\verb|features_for_select='0-9', num_features_to_select=8,|\linebreak
 						\verb|algorithm=EFeaturesSelectionAlgorithm.RecursiveByShapValues,|\linebreak
 						\verb|shap_calc_type=EShapCalcType.Regular,train_final_model=True)|
+	\item Result: $\text{Ein} = 1.85887, \text{Eval} = 2.11060, \text{Epublic} = 2.17214$
 \end{enumerate}
 
 \subsubsection{Introduction}
 
 CatBoost is an optimized version of Gradient Boosting Trees, offering additional functionalities such as categorical feature support, a fast GPU version, and good results with default parameters. Therefore, in the introductory section, we focus on the Gradient Boosting Tree (regression) algorithm itself.
 
-Regressor Tree is based on the Decision Tree, with the difference being that the categories at each node represent the predicted values of y instead of class labels. When determining the predicted value at a node, the algorithm optimizes the loss function for the training data at that node. During the branching process, the algorithm compares features in a way that maximally separates the training data with different ranges of y values.
+Regressor Tree is based on the Decision Tree, with the difference being that the categories at each node represent the predicted values of $y$ instead of class labels. When determining the predicted value at a node, the algorithm optimizes the loss function for the training data at that node. During the branching process, the algorithm compares features in a way that maximally separates the training data with different ranges of $y$ values.
 
-Gradient Boosting involves training subsequent models to predict the difference between the y value and the sum of the predictions from all previous models. This approach allows weak learners to combine and form a strong model. When the loss function permits, efficient computations can be performed using differentiation.
+Gradient Boosting involves training subsequent models to predict the difference between the $y$ value and the sum of the predictions from all previous models. This approach allows weak learners to combine and form a strong model. When the loss function permits, efficient computations can be performed using differentiation.
 
 In summary, Gradient Boosting Tree utilizes Regressor Tree for the purpose of Gradient Boosting. Therefore, we can use model parameters related to trees or limit the number of training iterations in Gradient Boosting to combat overfitting.
 
@@ -277,59 +275,75 @@ Furthermore, we discovered that several linear models, such as BayesianRidge, AR
 
 \section{Blending}
 
-In the final stage, we merged the aforementioned models that yielded satisfactory results into a single model. 
-As we had exhausted all available datasets during the training of the preceding models, 
-to prevent overfitting, we simply assigned different weights to each model based on our understanding of their performance. 
-SVM and SGDRegressor exhibited the best performance, thus receiving higher weights, 
-while the other models were assigned lower weights. 
-We believe that such an allocation contributes to controlling the upper bound of the private score while providing opportunities for effective error correction. 
-Through simple mathematical reasoning, 
-it can be deduced that the worst-case scenario for the private score is the sum of each model's private score multiplied by their respective weights. 
-Due to the higher weights assigned to SVM and SGDRegressor, the worst-case scenario for Blending does not deviate significantly from the performance of these two models. 
-Simultaneously, when different models make predictions on the same value, 
-if their predictions fall on opposite sides of the correct answer, 
-we can anticipate improved results through the blending of predicted values.
+In the final stage, we aggregated the aforementioned models above which yielded satisfactory results into a single model $G(\mathbf{x})$ by linear blending. As we had exhausted all available datasets during the training process, to avoid overfitting, we simply assigned different weights to each model based on our understanding of their performance. SVR and SGD Regressor showcased the best performance, thus assigned higher weights to them. On the other hand, other models were assigned lower weights. We believe that such an allocation contributes to controlling the upper bound of the private score while providing opportunities for effective error correction. 
 
-Ultimately, this model achieved a score of $2.039$ on the released data, outperforming all individual models.
+As for $G(\mathbf{x})$, it can be deduced that the worst-case scenario for the private score is the sum of each model's private score multiplied by their respective weights. On account of assigning higher weights to SVM and SGDRegressor, the two best-performing individual models, the worst-case scenario will not deviate significantly from the performance of these two models. Furthermore, blending different individual models made $G(\mathbf{x})$ more moderate and thus help combat overfitting on the training dataset. 
 
-\section{Final Result}
+At the end of the day, the blending model $G(\mathbf{x})$ achieved a validation score of $2.0390$, outperforming all individual models.
 
-\newpage
+\section{Final Results}
 
-\bibliographystyle{vancouver}
-\bibliography{references}
+\subsection{Comparison}
 
-% \begin{thebibliography}{9}
-% All information or data from other sources or authors must be appropriately cited at each point in the text where the source is relevant. All sources should be listed in a bibliographic reference section at the end of the paper with the heading "Reference List". 
+\subsubsection{Efficiency}
 
-% If the paper contains any copyright material, such as tables, figures, images, or other, the authors must obtain written permission from the copyright holder and provide it to the editor. 
+Given the training dataset with around $17,000$ samples, SGD Regressor ran rapidly within $4$ seconds. SVR is a bit slower, taking $20$ seconds to evaluate, but required extremely huge CPU usage. If the computer was busy at that time, the evaluation time may had taken much longer. Cat Boost was the slowest of all, taking $72$ seconds to execute. Overall, SGD Regressor outperformed the other two models in terms of efficiency due to the fact that it only uses a subset of the training data in each iteration. 
 
-% Bibliographic references should conform to the Vancouver style. In this style, bibliographic references are numbered and citations in the text to each reference should be numbers in square brackets; e.g., [1]. 
+\subsubsection{Scalability}
 
-% If you are using a reference management system (such as Zotero, Mendeley or ReadCube), you may be able to export your bibliography as a Bib\TeX{} file. 
+According to LIBSVM, the training time of SVR is more than quadratic with the number of samples. When the dataset had more than 100,000 samples, it may take considerably long time to train and make parameter tuning difficult. SGD Regressor, as its stochastic method, can successfully be applied on large scales of dataset. As for Cat Boost, it may be trained on GPU for speed up, thus it also can be trained on large scales. 
 
-% Please refer to the comments in this template for how to format your references in LaTeX (either with a .bib file, or via manual input of references).
+\subsubsection{Interpretability}
 
+Both SVR and SGD Regressor are based on linear regression, thus we may gain some insight from the feature coefficients. For example, a higher weight may indicate that the feature is more important. As for categorical features, one-hot encoder allows us to see whether belonging to a specific type may increase or decrease \texttt{danceability}. On the other hand, since cat boost is based on decision trees, it provides a more straightforward interpretation. We may clearly see how the model decide on each node in order to retrieve the prediction. 
 
-%% Please read the following comments for instructions on formatting your references.
-%% The provided style file formats references in the required Vancouver style
-%% This is a useful guide to formatting bibliographies using LaTeX (https://en.wikibooks.org/wiki/LaTeX/Bibliography_Management)
+\subsubsection{Generality}
 
-%% References with BibTeX database:
-%%Bib\TeX{} is a bibliographic tool that is used with \LaTeX{} to help organize the user's references and create a bibliography. This short tutorial explains how to use BibTex files [https://www.latex-tutorial.com/tutorials/beginners/latex-bibtex/].
+According to the models' validation score, we may take a glance on the generality of each model. Cat Boost had the worst Eval of all, indicating that it may have bad generality. This is because of the decision tree model, which highly depend on the training dataset, and very likely to overfit on it. As for the two linear regression based models, SGD Regressor performed slightly better than SVR in terms of Eval. We believed that the stochastic method successfully increased its generality and thus lead to a lower Eval. 
 
-%%For references without a BibTeX database:
-%%Your line of code will start with the \bibitem{cite_key} command. This is a unique identifier for a reference, such as #\bibitem{Lindquist95} or  #\bibitem{Smithetal2002}. Following the #\bibitem{cite_key} command is the actual reference. Here you should include all relevant details for the reference e.g. authors, title, year of publication, etc. The \bibliographystyle{vancouver} will format these references to the correct Vancouver style - as required by the STEM Fellowship Journal.
+\begin{table}[h]
+  \centering
+  \begin{tabularx}{0.8\textwidth}{p{2.5cm}|X|X|X}
+    \hline
+     & \textbf{SVR} & \textbf{SGD Regressor} & \textbf{Cat Boost} \\
+    \hline
+    Efficiency & moderate & perfect & bad \\
+    \hline
+    Scalability & bad & perfect & good \\
+    \hline
+    Interpretability & good & good & perfect \\
+    \hline
+	Generality & good & perfect & bad \\
+    \hline
+  \end{tabularx}
+  \caption{Model comparison table}
+  \label{tab:compareTable}
+\end{table}
 
-%% \bibitem must have the following form:
-%%   \bibitem{key}...
-%%
+\subsubsection{Blending}
 
-% \bibitem{}
-% Below is an example.
+We separate blending in another subsection due to its special properties. Aggregating the every models' predictions also made the blending method bad in most aspects. It may consume as much time as Cat Boost, lacking the ability to scale and reduce interpretability. Nonetheless, it may have the best generality of all since it aggregates the opinion of all models, which is exactly the major reason of blending. 
 
-%%\bibitem{Smithetal2002}
+\subsection{Proposal}
 
-% \end{thebibliography}
+If evaluation time is not the major concern, we propose the blending model as the best model. Due to the distribution difference between training, public and private datasets, we consider generality as the most important perspective. We had taken our toll on overfitting the public data during the first stage of competition, and do not want trip over the same stone twice. Thus the blending model, which has the best generality, may give the most accurate prediction of all the models we have experimented. 
+
+If evaluation time is limited, we propose SGD Regressor as the most suitable model. Still, because of generality issue, SGD Regressor stands out from all the individual models. Moreover, it has great scalability and is exceptionally efficient in training, enabling it to handle various and vast amounts of datasets smoothly. 
+
+\subsection*{References}
+
+\begin{enumerate}[label={[\arabic*]}]
+	\item Chang CC, Lin CJ. LIBSVM: A library for support vector machines. ACM transactions on intelligent systems and technology (TIST). 2011;2(3):1-27. Software available at \url{http://www.csie.ntu.edu.tw/~cjlin/libsvm}
+	\item Scikit-learn: Machine Learning in Python Scikit-learn — 1.2.2 Documentation. \url{scikit-learn.org/stable/index.html}.
+	\item CatBoost. \url{catboost.ai/en/docs}.
+	\item Molnar, Christoph. Interpretable machine learning. Lulu. com, 2020.
+\end{enumerate}
+
+\subsection*{Work Load}
+\begin{itemize}
+	\item b10902003: SVR, CatBoost, other models, blending
+	\item b10902067: SGD Regressor, plots, report
+\end{itemize}
+
 
 \end{document}
