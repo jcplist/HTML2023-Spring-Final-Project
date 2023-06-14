@@ -242,12 +242,32 @@ Our third model is Cat Boost. It achieved a score of $2.111$ on the validation d
 \begin{enumerate}
 	\item Package: CatBoost
 	\item Selected Features: \texttt{Instrumentalness, Speechiness, Energy, Valence, Acousticness, Liveness, Tempo, Key, Composer, Artist}
-	\item Parameters: loss function $=$ MAE, uses eval set in feature select, drop 2 features, train final model $=$ True
+	\item Parameters: \verb|CatBoostRegressor(task_type="GPU", devices='0', random_state=0xCC12, loss_function='MAE',|\linebreak
+						\verb|eval_metric = 'MAE', cat_features=[Composer, Artist]).select_features(eval_set=[released data],|\linebreak
+						\verb|features_for_select='0-9', num_features_to_select=8,|\linebreak
+						\verb|algorithm=EFeaturesSelectionAlgorithm.RecursiveByShapValues,|\linebreak
+						\verb|shap_calc_type=EShapCalcType.Regular,train_final_model=True)|
 \end{enumerate}
 
 \subsubsection{Introduction}
 
-CatBoost is an optimized version of Gradient Boosting Trees. It natively supports categorical features and allows the inclusion of a validation dataset to retain the best iteration, thereby reducing the need for parameter tuning while mitigating overfitting. We utilized the similar input as SVR and employed two additional methods to enhance our model. The first method involved constraining the tree depth and applying l2 regularization at the leaf nodes. The second method was utilizing a built-in feature selection tool. We found that the approach utilizing feature selection exhibited better performance on the released dataset, leading us to adopt the feature selection version as our final choice.
+CatBoost is an optimized version of Gradient Boosting Trees, offering additional functionalities such as categorical feature support, a fast GPU version, and good results with default parameters. Therefore, in the introductory section, we focus on the Gradient Boosting Tree (regression) algorithm itself.
+
+Regressor Tree is based on the Decision Tree, with the difference being that the categories at each node represent the predicted values of y instead of class labels. When determining the predicted value at a node, the algorithm optimizes the loss function for the training data at that node. During the branching process, the algorithm compares features in a way that maximally separates the training data with different ranges of y values.
+
+Gradient Boosting involves training subsequent models to predict the difference between the y value and the sum of the predictions from all previous models. This approach allows weak learners to combine and form a strong model. When the loss function permits, efficient computations can be performed using differentiation.
+
+In summary, Gradient Boosting Tree utilizes Regressor Tree for the purpose of Gradient Boosting. Therefore, we can use model parameters related to trees or limit the number of training iterations in Gradient Boosting to combat overfitting.
+
+\subsubsection{Preprocessing}
+
+We selected the better preprocessing method from the two methods we already implemented, rather than developing a new one. We utilized the method described in the SVM section, which was chosen based on error metrics.
+
+\subsubsection{Parameters}
+
+We employed two additional methods to enhance our model. The first method involved constraining the tree depth and applying l2 regularization at the leaf nodes. The second method was utilizing a built-in feature selection tool. We found that the approach utilizing feature selection exhibited better performance on the released dataset, leading us to adopt the feature selection version as our final choice.
+
+% CatBoost is an optimized version of Gradient Boosting Trees. It natively supports categorical features and allows the inclusion of a validation dataset to retain the best iteration, thereby reducing the need for parameter tuning while mitigating overfitting. We utilized the similar input as SVR and employed two additional methods to enhance our model. The first method involved constraining the tree depth and applying l2 regularization at the leaf nodes. The second method was utilizing a built-in feature selection tool. We found that the approach utilizing feature selection exhibited better performance on the released dataset, leading us to adopt the feature selection version as our final choice.
 
 \subsection{Other Models}
 
